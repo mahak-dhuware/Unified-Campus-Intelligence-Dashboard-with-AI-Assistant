@@ -1,89 +1,35 @@
 import { useState } from "react";
-import { sendMessage } from "../services/api";
 
-function ChatBox({
-    messages,
-    setMessages,
-}) {
-    const [input, setInput] =
-        useState("");
+function ChatBox({ sendMessage }) {
+    const [input, setInput] = useState("");
 
-    const handleSend = async () => {
+    const handleSend = () => {
         if (!input.trim()) return;
 
-        setMessages([
-            ...messages,
-            {
-                sender: "user",
-                text: input,
-            },
-        ]);
-
-        const userInput = input;
-
+        sendMessage(input);
         setInput("");
-
-        const response = await sendMessage(userInput);
-
-let replyText = "";
-
-if (Array.isArray(response.reply)) {
-    replyText = response.reply
-        .map((item) => {
-            if (item.title) {
-                return `📚 ${item.title} - ${
-                    item.available ? "Available" : "Unavailable"
-                }`;
-            }
-
-            if (item.name) {
-                return `🎉 ${item.name} (${item.date})`;
-            }
-
-            return JSON.stringify(item);
-        })
-        .join("\n");
-} else if (typeof response.reply === "object") {
-    replyText = Object.entries(response.reply)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join("\n");
-} else {
-    replyText = response.reply;
-}
-
-setMessages((prev) => [
-    ...prev,
-    {
-        sender: "assistant",
-        text: replyText,
-    },
-
-        ]);
     };
 
     return (
-        <div>
+        <div style={{ display: "flex", gap: "10px" }}>
             <input
                 value={input}
-                onChange={(e) =>
-                    setInput(
-                        e.target.value
-                    )
-                }
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask something..."
                 style={{
-                    width: "75%",
+                    flex: 1,
                     padding: "12px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        handleSend();
+                    }
                 }}
             />
 
-            <button
-                onClick={handleSend}
-                style={{
-                    padding: "12px",
-                    marginLeft: "10px",
-                }}
-            >
+            <button onClick={handleSend}>
                 Send
             </button>
         </div>

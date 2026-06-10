@@ -13,9 +13,21 @@ app.post("/chat", async (req, res) => {
     try {
         const { message } = req.body;
 
+        if (!message) {
+            return res.status(400).json({
+                error: "Message is required",
+            });
+        }
+
+        const lowerMessage = message.toLowerCase();
+
         let reply = "";
 
-        if (message.toLowerCase().includes("book")) {
+        // Library MCP Server
+        if (
+            lowerMessage.includes("book") ||
+            lowerMessage.includes("library")
+        ) {
             const response = await axios.get(
                 "http://localhost:5001/books"
             );
@@ -23,7 +35,13 @@ app.post("/chat", async (req, res) => {
             reply = response.data;
         }
 
-        else if (message.toLowerCase().includes("event")) {
+        // Events MCP Server
+        else if (
+            lowerMessage.includes("event") ||
+            lowerMessage.includes("workshop") ||
+            lowerMessage.includes("hackathon") ||
+            lowerMessage.includes("contest")
+        ) {
             const response = await axios.get(
                 "http://localhost:5002/events"
             );
@@ -31,10 +49,14 @@ app.post("/chat", async (req, res) => {
             reply = response.data;
         }
 
+        // Cafeteria MCP Server
         else if (
-            message.toLowerCase().includes("food") ||
-            message.toLowerCase().includes("menu") ||
-            message.toLowerCase().includes("lunch")
+            lowerMessage.includes("food") ||
+            lowerMessage.includes("menu") ||
+            lowerMessage.includes("lunch") ||
+            lowerMessage.includes("breakfast") ||
+            lowerMessage.includes("dinner") ||
+            lowerMessage.includes("cafeteria")
         ) {
             const response = await axios.get(
                 "http://localhost:5003/menu"
@@ -43,19 +65,26 @@ app.post("/chat", async (req, res) => {
             reply = response.data;
         }
 
+        // Unknown query
         else {
             reply =
-                "I can currently help with books, events, and cafeteria information.";
+                "I can currently help with:\n" +
+                "📚 Library information\n" +
+                "🎉 Campus events\n" +
+                "🍽 Cafeteria menu\n\n" +
+                "Try asking:\n" +
+                "• What books are available?\n" +
+                "• Any upcoming events?\n" +
+                "• What's today's menu?";
         }
 
         res.json({ reply });
-    }
 
-    catch (error) {
-        console.error(error);
+    } catch (error) {
+        console.error("AI Server Error:", error.message);
 
         res.status(500).json({
-            error: "Something went wrong",
+            error: "Something went wrong while processing your request.",
         });
     }
 });
