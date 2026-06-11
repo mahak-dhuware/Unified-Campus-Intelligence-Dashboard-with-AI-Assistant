@@ -8,31 +8,33 @@ function MessageBubble({ sender, text }) {
                 justifyContent: isUser
                     ? "flex-end"
                     : "flex-start",
-                marginBottom: "16px",
+                marginBottom: "20px",
             }}
         >
             <div
                 style={{
-                    maxWidth: "75%",
+                    maxWidth: isUser ? "70%" : "80%",
                     padding: "14px 18px",
-                    borderRadius: "18px",
+                    borderRadius: isUser
+                        ? "18px 18px 4px 18px"
+                        : "18px 18px 18px 4px",
                     background: isUser
-                        ? "#4f46e5"
-                        : "#ffffff",
+                        ? "#4338CA"
+                        : "#FFFFFF",
                     color: isUser
-                        ? "white"
+                        ? "#FFFFFF"
                         : "#111827",
                     boxShadow:
                         "0 2px 8px rgba(0,0,0,0.08)",
                     border: isUser
                         ? "none"
-                        : "1px solid #e5e7eb",
+                        : "1px solid #E5E7EB",
                 }}
             >
                 <div
                     style={{
-                        fontSize: "12px",
-                        fontWeight: "600",
+                        fontSize: "11px",
+                        fontWeight: "500",
                         marginBottom: "8px",
                         opacity: 0.8,
                     }}
@@ -46,6 +48,7 @@ function MessageBubble({ sender, text }) {
                     style={{
                         whiteSpace: "pre-line",
                         lineHeight: "1.6",
+                        wordBreak: "break-word",
                     }}
                 >
                     {text}

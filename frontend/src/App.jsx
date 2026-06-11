@@ -47,14 +47,12 @@ function App() {
                 replyText = response.reply
                     .map((item) => {
                         if (item.title) {
-                            return `<BookOpen size={18} /> ${item.title} - ${item.available
-                                ? "Available"
-                                : "Unavailable"
+                            return `📚 ${item.title} - ${item.available ? "Available" : "Unavailable"
                                 }`;
                         }
 
                         if (item.name) {
-                            return `<Calendar size={18} /> ${item.name} (${item.date})`;
+                            return `🎉 ${item.name} (${item.date})`;
                         }
 
                         return JSON.stringify(item);
@@ -67,7 +65,7 @@ function App() {
                 replyText = Object.entries(response.reply)
                     .map(
                         ([key, value]) =>
-                            `<UtensilsCrossed size={18} /> ${key}: ${value}`
+                            `🍽 ${key}: ${value}`
                     )
                     .join("\n");
             } else {
@@ -86,7 +84,7 @@ function App() {
 
             setLoading(false);
             console.error(error);
-            
+
 
             setMessages((prev) => [
                 ...prev,
@@ -104,23 +102,22 @@ function App() {
                 <aside
                     style={{
                         ...styles.sidebar,
-
-                        ...(isMobile && {
-                            position: "fixed",
-                            top: 0,
-                            left: sidebarOpen ? 0 : "-320px",
-                            height: "100vh",
-                            zIndex: 1000,
-                            transition: "left 0.3s ease",
-                            borderRadius: 0,
-                        }),
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        height: "100vh",
+                        width: "320px",
+                        zIndex: 1000,
+                        transform: sidebarOpen
+                            ? "translateX(0)"
+                            : "translateX(-100%)",
+                        transition: "transform 0.3s ease",
+                        borderRadius: 0,
+                        overflowY: "auto",
                     }}
                 >
                     <button
-                        style={{
-                            ...styles.closeButton,
-                            display: isMobile ? "block" : "none",
-                        }}
+                        style={styles.closeButton}
                         onClick={() => setSidebarOpen(false)}
                     >
                         ✕
@@ -143,6 +140,24 @@ function App() {
 
                     <div style={styles.section}>
                         <div style={styles.sectionTitle}>
+                            Connected Services
+                        </div>
+
+                        <div style={styles.service}>
+                            🟢 Library MCP
+                        </div>
+
+                        <div style={styles.service}>
+                            🟢 Events MCP
+                        </div>
+
+                        <div style={styles.service}>
+                            🟢 Cafeteria MCP
+                        </div>
+                    </div>
+
+                    <div style={styles.section}>
+                        <div style={styles.sectionTitle}>
                             Example Prompts
                         </div>
 
@@ -150,90 +165,111 @@ function App() {
                             style={styles.promptCard}
                             onClick={() => sendMessage("What books are available?")}
                         >
-                            <BookOpen size={18} /> What books are available?
+                            What books are available?
                         </div>
 
                         <div style={styles.promptCard}
                             onClick={() => sendMessage(" Any upcoming events?")}>
-                            <Calendar size={18} /> Any upcoming events?
+                            Any upcoming events?
                         </div>
 
                         <div style={styles.promptCard}
                             onClick={() => sendMessage(" What's today's menu")}>
-                            <UtensilsCrossed size={18} /> What's today's menu?
+                            What's today's menu?
                         </div>
                     </div>
+                    <h3 style={styles.sidebarHeading}>
+                        Architecture
+                    </h3>
 
-                    <div style={styles.section}>
-                        <div style={styles.sectionTitle}>
-                            Connected Services
-                        </div>
-
-                        <div style={styles.service}>
-                            <BookOpen size={18} /> Library MCP
-                        </div>
-
-                        <div style={styles.service}>
-                            <Calendar size={18} /> Events MCP
-                        </div>
-
-                        <div style={styles.service}>
-                            <UtensilsCrossed size={18} /> Cafeteria MCP
-                        </div>
+                    <div style={styles.architectureBox}>
+                        Independent MCP servers route
+                        requests dynamically based on
+                        student queries.
                     </div>
+
+
                 </aside>
-                {
-                    isMobile && sidebarOpen && (
-                        <div
-                            style={styles.overlay}
-                            onClick={() =>
-                                setSidebarOpen(false)
-                            }
-                        />
-                    )
-                }
+                {sidebarOpen && (
+                    <div
+                        style={styles.overlay}
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
 
-                <main style={styles.main}>
-                    <div style={{
-                        ...styles.mobileHeader,
-                        display: isMobile ? "flex" : "none",
-                    }}>
+
+
+
+                <div
+                    style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        overflow: "hidden",
+                        minHeight: 0,
+                    }}
+                >
+                    <div style={styles.topBar}>
                         <button
                             style={styles.menuButton}
                             onClick={() => setSidebarOpen(true)}
                         >
-                            ☰
+                            <Menu size={24} />
                         </button>
 
-                        <span style={styles.mobileTitle}>
-                            Campus AI
-                        </span>
-                    </div>
-                    <div style={styles.header}>
-                        <h1 style={styles.title}>
-                            Campus Intelligence Dashboard
-                        </h1>
+                        <div style={styles.topBarCenter}>
+                            <h1 style={styles.title}>
+                                Campus Intelligence Dashboard
+                            </h1>
 
-                        <p style={styles.subtitle}>
-                            AI-powered unified campus assistant
-                        </p>
+                            <p style={styles.subtitle}>
+                                AI-powered unified campus assistant
+                            </p>
+                        </div>
 
-                        <p style={styles.poweredBy}>
-                            Powered by • Library • Events • Cafeteria
-                        </p>
+                        <div style={{ width: "40px" }} />
                     </div>
 
 
                     <div style={styles.chatContainer}>
                         <div style={styles.chatArea}>
                             {messages.length === 0 && (
-                                <div style={styles.emptyState}>
-                                    <h3>👋 Welcome to Campus AI</h3>
+                                <div style={styles.welcome}>
+                                    <h2>👋 Welcome to Campus AI</h2>
 
                                     <p>
-                                        Ask anything about books,
-                                        events, or cafeteria services.
+                                        Ask anything about books, events,
+                                        or cafeteria services.
                                     </p>
+
+                                    <div style={styles.promptContainer}>
+                                        <button
+                                            style={styles.promptChip}
+                                            onClick={() =>
+                                                sendMessage("What books are available?")
+                                            }
+                                        >
+                                            📚 Available Books
+                                        </button>
+
+                                        <button
+                                            style={styles.promptChip}
+                                            onClick={() =>
+                                                sendMessage("Any upcoming events?")
+                                            }
+                                        >
+                                            🎉 Upcoming Events
+                                        </button>
+
+                                        <button
+                                            style={styles.promptChip}
+                                            onClick={() =>
+                                                sendMessage("What's today's menu?")
+                                            }
+                                        >
+                                            🍽 Today's Menu
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
@@ -263,8 +299,8 @@ function App() {
                             <ChatBox sendMessage={sendMessage} />
                         </div>
                     </div>
-                </main>
 
+                </div>
             </div>
         </div>
     );
@@ -272,6 +308,43 @@ function App() {
 
 const styles = {
 
+    welcome: {
+        textAlign: "center",
+        color: "#475569",
+        marginTop: "60px",
+    },
+
+    promptContainer: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "12px",
+        flexWrap: "wrap",
+        marginTop: "24px",
+    },
+
+    promptChip: {
+        border: "1px solid #CBD5E1",
+        background: "#FFFFFF",
+        padding: "12px 18px",
+        borderRadius: "999px",
+        cursor: "pointer",
+        fontSize: "14px",
+        transition: "all 0.2s ease",
+    },
+
+    topBar: {
+        position: "relative",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: "24px",
+        flexShrink: 0,
+    },
+
+    topBarCenter: {
+        flex: 1,
+        textAlign: "center",
+    },
     typingContainer: {
         display: "flex",
         alignItems: "center",
@@ -285,27 +358,17 @@ const styles = {
         fontWeight: "bold",
     },
 
-    mobileHeader: {
-        display: "none",
-        alignItems: "center",
-        gap: "12px",
-        marginBottom: "20px",
-    },
-
-    mobileTitle: {
-        fontWeight: "700",
-        color: "#0F172A",
-    },
 
     menuButton: {
+        position: "absolute",
+        left: 0,
         border: "none",
         background: "transparent",
-        fontSize: "24px",
         cursor: "pointer",
+        padding: "8px",
     },
 
     closeButton: {
-        display: "none",
         border: "none",
         background: "transparent",
         fontSize: "24px",
@@ -348,6 +411,22 @@ const styles = {
         fontSize: "13px",
         color: "#64748B",
     },
+    sidebarHeading: {
+        fontSize: "14px",
+        color: "#64748B",
+        marginTop: "24px",
+        marginBottom: "12px",
+    },
+
+    architectureBox: {
+        background: "#F8FAFC",
+        border: "1px solid #E2E8F0",
+        borderRadius: "12px",
+        padding: "12px",
+        fontSize: "14px",
+        color: "#334155",
+        lineHeight: "1.5",
+    },
 
     section: {
         marginBottom: "28px",
@@ -374,12 +453,13 @@ const styles = {
         padding: "10px 0",
         color: "#334155",
     },
-
     layout: {
+        position: "relative",
         display: "flex",
-        gap: "24px",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
     },
-
     sidebar: {
         width: "260px",
         background: "#FFFFFF",
@@ -388,26 +468,17 @@ const styles = {
         padding: "24px",
         flexShrink: 0,
     },
-    sidebarOpen: {},
 
-    main: {
-        flex: 1,
-    },
 
-    header: {
-        marginBottom: "30px",
-    },
 
     title: {
-        fontSize: "32px",
-        fontWeight: "700",
-        color: "#0F172A",
-        marginBottom: "8px",
+        fontSize: "28px",
+        margin: 0,
     },
 
     subtitle: {
         color: "#64748B",
-        marginBottom: "8px",
+        margin: "6px 0 0",
     },
 
     poweredBy: {
@@ -424,31 +495,42 @@ const styles = {
     },
 
     container: {
-        maxWidth: "850px",
+        width: "100%",
+        maxWidth: "1200px",
         margin: "0 auto",
-        padding: "40px 24px",
+        padding: "24px",
         fontFamily: "Inter, sans-serif",
         backgroundColor: "#F8FAFC",
-        minHeight: "100vh",
+        height: "100vh",
+        overflow: "hidden",
+        boxSizing: "border-box",
     },
     chatContainer: {
-        background: "#FFFFFF",
-        border: "1px solid #E2E8F0",
-        borderRadius: "20px",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
         overflow: "hidden",
+        minHeight: 0,
     },
 
     chatArea: {
-        minHeight: "450px",
-        maxHeight: "500px",
+        flex: 1,
         overflowY: "auto",
-        padding: "24px",
+        minHeight: 0,
+        padding: "32px",
+        background: "#FFFFFF",
+        border: "1px solid #E2E8F0",
+        borderRadius: "20px 20px 0 0",
+        boxShadow: "0 4px 20px rgba(15,23,42,0.08)",
     },
-
     inputWrapper: {
         borderTop: "1px solid #E2E8F0",
         padding: "20px",
         background: "#FFFFFF",
+        flexShrink: 0,
+        position: "sticky",
+        bottom: 0,
+        zIndex: 2,
     },
 
     emptyState: {
@@ -457,11 +539,7 @@ const styles = {
         marginTop: "150px",
     },
 
-    loading: {
-        color: "#64748B",
-        fontStyle: "italic",
-        marginTop: "12px",
-    },
+
     examples: {
         marginTop: "16px",
         color: "#64748B",
