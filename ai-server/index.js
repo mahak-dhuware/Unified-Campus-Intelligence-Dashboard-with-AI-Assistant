@@ -3,12 +3,50 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const OpenAI = require("openai");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+const client = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+});
+
+/*
+    TEST ROUTE
+*/
+app.get("/test-llm", async (req, res) => {
+    try {
+        const completion =
+            await client.chat.completions.create({
+                model: "nex-agi/nex-n2-pro:free",
+                messages: [
+                    {
+                        role: "user",
+                        content: "Say hello.",
+                    },
+                ],
+            });
+
+        res.json({
+            reply:
+                completion.choices[0].message.content,
+        });
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+});
+
+/*
+    MAIN CHAT ROUTE
+*/
 app.post("/chat", async (req, res) => {
     try {
         const { message } = req.body;
@@ -19,76 +57,149 @@ app.post("/chat", async (req, res) => {
             });
         }
 
-        const lowerMessage = message.toLowerCase();
+        const tools = [
+            {
+                type: "function",
+                function: {
+                    name: "getBooks",
+                    description:
+                        "Get available books from the campus library.",
+                    parameters: {
+                        type: "object",
+                        properties: {},
+                    },
+                },
+            },
+            {
+                type: "function",
+                function: {
+                    name: "getEvents",
+                    description:
+                        "Get upcoming campus events.",
+                    parameters: {
+                        type: "object",
+                        properties: {},
+                    },
+                },
+            },
+            {
+                type: "function",
+                function: {
+                    name: "getMenu",
+                    description:
+                        "Get today's cafeteria menu.",
+                    parameters: {
+                        type: "object",
+                        properties: {},
+                    },
+                },
+            },
+        ];
 
-        let reply = "";
+        /*
+            Ask LLM which tool to call
+        */
 
-        // Library MCP Server
-        if (
-            lowerMessage.includes("book") ||
-            lowerMessage.includes("library")
-        ) {
-            const response = await axios.get(
-                "http://localhost:5001/books"
-            );
+        const completion =
+            await client.chat.completions.create({
+                model: "nex-agi/nex-n2-pro:free",
 
-            reply = response.data;
+                messages: [
+                    {
+                        role: "system",
+                        content:
+                            "You are Campus AI. Use available tools whenever needed to answer questions.",
+                    },
+                    {
+                        role: "user",
+                        content: message,
+                    },
+                ],
+
+                tools,
+            });
+
+        const toolCall =
+            completion.choices[0].message.tool_calls?.[0];
+
+        /*
+            If LLM wants a tool
+        */
+
+        if (toolCall) {
+            const toolName =
+                toolCall.function.name;
+
+            let reply;
+
+            /*
+                Library MCP
+            */
+
+            if (toolName === "getBooks") {
+                const response =
+                    await axios.get(
+                        "http://localhost:5001/books"
+                    );
+
+                reply = response.data;
+            }
+
+            /*
+                Events MCP
+            */
+
+            else if (toolName === "getEvents") {
+                const response =
+                    await axios.get(
+                        "http://localhost:5002/events"
+                    );
+
+                reply = response.data;
+            }
+
+            /*
+                Cafeteria MCP
+            */
+
+            else if (toolName === "getMenu") {
+                const response =
+                    await axios.get(
+                        "http://localhost:5003/menu"
+                    );
+
+                reply = response.data;
+            }
+
+            return res.json({ reply });
         }
 
-        // Events MCP Server
-        else if (
-            lowerMessage.includes("event") ||
-            lowerMessage.includes("workshop") ||
-            lowerMessage.includes("hackathon") ||
-            lowerMessage.includes("contest")
-        ) {
-            const response = await axios.get(
-                "http://localhost:5002/events"
-            );
+        /*
+            General conversation
+        */
 
-            reply = response.data;
-        }
-
-        // Cafeteria MCP Server
-        else if (
-            lowerMessage.includes("food") ||
-            lowerMessage.includes("menu") ||
-            lowerMessage.includes("lunch") ||
-            lowerMessage.includes("breakfast") ||
-            lowerMessage.includes("dinner") ||
-            lowerMessage.includes("cafeteria")
-        ) {
-            const response = await axios.get(
-                "http://localhost:5003/menu"
-            );
-
-            reply = response.data;
-        }
-
-        // Unknown query
-        else {
-            reply =
-                "I can currently help with:\n" +
-                "📚 Library information\n" +
-                "🎉 Campus events\n" +
-                "🍽 Cafeteria menu\n\n" +
-                "Try asking:\n" +
-                "• What books are available?\n" +
-                "• Any upcoming events?\n" +
-                "• What's today's menu?";
-        }
-
-        res.json({ reply });
+        return res.json({
+            reply:
+                completion.choices[0].message.content,
+        });
 
     } catch (error) {
-        console.error("AI Server Error:", error.message);
+        console.error(
+            "AI Server Error:",
+            error.response?.data ||
+                error.message
+        );
 
         res.status(500).json({
-            error: "Something went wrong while processing your request.",
+            error:
+                "Something went wrong while processing your request.",
         });
     }
 });
 
 app.listen(5000, () => {
-    console.log("🤖 AI Server running on port 5000");
+    console.log(
+        "🤖 AI Server running on port 5000"
+    );
 });
+

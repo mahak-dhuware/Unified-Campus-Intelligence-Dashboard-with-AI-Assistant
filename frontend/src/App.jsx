@@ -19,13 +19,14 @@ function App() {
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const chatEndRef = useRef(null);
+
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({
             behavior: "smooth",
         });
     }, [messages, loading]);
     const sendMessage = async (text) => {
-        if (!text.trim()) return;
+        if (!text.trim() || loading) return;
 
         // User message
         setMessages((prev) => [
@@ -38,36 +39,53 @@ function App() {
         setLoading(true);
 
         try {
-            setLoading(true);
+
             const response = await sendToAI(text);
 
             let replyText = "";
 
             if (Array.isArray(response.reply)) {
-                replyText = response.reply
-                    .map((item) => {
-                        if (item.title) {
-                            return `📚 ${item.title} - ${item.available ? "Available" : "Unavailable"
-                                }`;
-                        }
 
-                        if (item.name) {
-                            return `🎉 ${item.name} (${item.date})`;
-                        }
+                if (response.reply.length && response.reply[0].title) {
+                    const available = response.reply.filter(book => book.available);
+                    const unavailable = response.reply.filter(book => !book.available);
+                    replyText =
+                        `📚 Library Status\n\n` +
+                        `Available (${available.length}):\n` +
+                        available.map(book => `✅ ${book.title}`).join("\n") +
+                        `\n\nCurrently Unavailable (${unavailable.length}):\n` +
+                        unavailable.map(book => `❌ ${book.title}`).join("\n");
+                }
 
-                        return JSON.stringify(item);
-                    })
-                    .join("\n");
+                else if (response.reply.length && response.reply[0].name) {
+                    replyText =
+                        "🎉 Upcoming Campus Events\n\n" +
+                        response.reply
+                            .map(event =>
+                                `📅 ${event.name}
+                                 📍 ${event.location}
+                                 🗓️ ${new Date(event.date).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric",
+                                    }
+                                )}`
+                            )
+                            .join("\n\n");
+                }
             } else if (
                 typeof response.reply === "object" &&
                 response.reply !== null
             ) {
-                replyText = Object.entries(response.reply)
-                    .map(
-                        ([key, value]) =>
-                            `🍽 ${key}: ${value}`
-                    )
-                    .join("\n");
+                replyText =
+                    `Here's today's cafeteria menu (${response.reply.day}):\n\n` +
+                    `🥣 Breakfast: ${response.reply.breakfast}\n` +
+                    `🍛 Lunch: ${response.reply.lunch}\n` +
+                    `☕ Snacks: ${response.reply.snacks}\n` +
+                    `🍚 Dinner: ${response.reply.dinner}\n\n` +
+                    `Enjoy your meal! 🍽️`;
             } else {
                 replyText = response.reply;
             }
@@ -90,7 +108,8 @@ function App() {
                 ...prev,
                 {
                     sender: "assistant",
-                    text: "❌ Something went wrong.",
+                    text:
+                        "⚠️ Sorry, I couldn't process your request. Please try again.",
                 },
             ]);
         }
@@ -106,7 +125,7 @@ function App() {
                         top: 0,
                         left: 0,
                         height: "100vh",
-                        width: "320px",
+                        width: isMobile ? "85%" : "320px",
                         zIndex: 1000,
                         transform: sidebarOpen
                             ? "translateX(0)"
@@ -163,18 +182,22 @@ function App() {
 
                         <div
                             style={styles.promptCard}
-                            onClick={() => sendMessage("What books are available?")}
+                            onClick={() => {
+                                sendMessage("What books are available?");
+                                setSidebarOpen(false);
+                            }}
+
                         >
                             What books are available?
                         </div>
 
                         <div style={styles.promptCard}
-                            onClick={() => sendMessage(" Any upcoming events?")}>
+                            onClick={() => { sendMessage(" Any upcoming events?"); setSidebarOpen(false); }}>
                             Any upcoming events?
                         </div>
 
                         <div style={styles.promptCard}
-                            onClick={() => sendMessage(" What's today's menu")}>
+                            onClick={() => { sendMessage(" What's today's menu"); setSidebarOpen(false);; }}>
                             What's today's menu?
                         </div>
                     </div>
@@ -245,6 +268,12 @@ function App() {
                                     <div style={styles.promptContainer}>
                                         <button
                                             style={styles.promptChip}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.background = "#EEF2FF";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.background = "#FFFFFF";
+                                            }}
                                             onClick={() =>
                                                 sendMessage("What books are available?")
                                             }
@@ -254,6 +283,12 @@ function App() {
 
                                         <button
                                             style={styles.promptChip}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.background = "#EEF2FF";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.background = "#FFFFFF";
+                                            }}
                                             onClick={() =>
                                                 sendMessage("Any upcoming events?")
                                             }
@@ -263,6 +298,12 @@ function App() {
 
                                         <button
                                             style={styles.promptChip}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.background = "#EEF2FF";
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.background = "#FFFFFF";
+                                            }}
                                             onClick={() =>
                                                 sendMessage("What's today's menu?")
                                             }
@@ -283,7 +324,7 @@ function App() {
 
                             {loading && (
                                 <div style={styles.typingContainer}>
-                                    <span>Campus AI is typing</span>
+                                    <span>🤖 Campus AI is thinking</span>
 
                                     <div style={styles.dots}>
                                         <span>.</span>
@@ -296,7 +337,10 @@ function App() {
                         </div>
 
                         <div style={styles.inputWrapper}>
-                            <ChatBox sendMessage={sendMessage} />
+                            <ChatBox
+                                sendMessage={sendMessage}
+                                disabled={loading}
+                            />
                         </div>
                     </div>
 
@@ -330,6 +374,8 @@ const styles = {
         cursor: "pointer",
         fontSize: "14px",
         transition: "all 0.2s ease",
+        fontWeight: "500",
+
     },
 
     topBar: {
@@ -517,7 +563,7 @@ const styles = {
         flex: 1,
         overflowY: "auto",
         minHeight: 0,
-        padding: "32px",
+        padding: "20px",
         background: "#FFFFFF",
         border: "1px solid #E2E8F0",
         borderRadius: "20px 20px 0 0",

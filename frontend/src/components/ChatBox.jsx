@@ -1,14 +1,15 @@
 import { useState } from "react";
 
-function ChatBox({ sendMessage }) {
+function ChatBox({ sendMessage, disabled = false }) {
     const [input, setInput] = useState("");
 
     const handleSend = () => {
-        if (!input.trim()) return;
+        if (!input.trim() || disabled) return;
 
         sendMessage(input);
         setInput("");
     };
+
     const styles = {
         container: {
             display: "flex",
@@ -32,9 +33,10 @@ function ChatBox({ sendMessage }) {
             border: "none",
             background: "#0F172A",
             color: "#FFFFFF",
-            cursor: "pointer",
+            cursor: disabled ? "not-allowed" : "pointer",
             fontWeight: "600",
             fontSize: "15px",
+            opacity: disabled ? 0.7 : 1,
         },
     };
 
@@ -45,24 +47,23 @@ function ChatBox({ sendMessage }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                        sendMessage(input);
-                        setInput("");
+                        handleSend();
                     }
                 }}
                 placeholder="Ask about books, events, cafeteria..."
                 style={styles.input}
+                disabled={disabled}
             />
 
             <button
-                onClick={() => {
-                    sendMessage(input);
-                    setInput("");
-                }}
+                disabled={disabled}
+                onClick={handleSend}
                 style={styles.button}
             >
-                Send
+                {disabled ? "Sending..." : "Send"}
             </button>
         </div>
     );
 }
+
 export default ChatBox;
