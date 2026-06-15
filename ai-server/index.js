@@ -140,6 +140,7 @@ app.post("/chat", async (req, res) => {
         },
         { role: "user", content: message },
       ],
+      max_tokens: 150,
       tools,
     });
 
@@ -223,6 +224,7 @@ Rules:
       content: JSON.stringify(r),
     })),
   ],
+  max_tokens: 250
 });
 
     return res.json({
