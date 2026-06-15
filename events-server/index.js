@@ -11,7 +11,8 @@ app.use(express.json());
 app.get("/events", (req, res) => {
     res.json(getUpcomingEvents());
 });
+const PORT = process.env.PORT || 5002;
 
-app.listen(5002, () => {
-    console.log("🎉 Events Server running on port 5002");
+app.listen(PORT, () => {
+  console.log("Library server running");
 });

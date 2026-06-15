@@ -11,7 +11,8 @@ app.use(express.json());
 app.get("/books", (req, res) => {
     res.json(getBooks());
 });
+const PORT = process.env.PORT || 5001;
 
-app.listen(5001, () => {
-    console.log("📚 Library Server running on port 5001");
+app.listen(PORT, () => {
+  console.log("Library server running");
 });

@@ -11,7 +11,8 @@ app.use(express.json());
 app.get("/menu", (req, res) => {
     res.json(getTodaysMenu());
 });
+const PORT = process.env.PORT || 5003;
 
-app.listen(5003, () => {
-    console.log("🍽️ Cafeteria Server running on port 5003");
+app.listen(PORT, () => {
+  console.log("Library server running");
 });
