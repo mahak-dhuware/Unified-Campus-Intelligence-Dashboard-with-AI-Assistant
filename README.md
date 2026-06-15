@@ -88,7 +88,7 @@ Instead of relying on a centralized database, each campus service maintains its 
 ## 📂 Project Structure
 
 ```text
-Unified-Campus-Intelligence-Dashboard-with-AI-Assistant/
+campus-dashboard/
 │
 ├── frontend/
 ├── ai-server/
