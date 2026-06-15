@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+
 function MessageBubble({ sender, text }) {
     const isUser = sender === "user";
 
@@ -8,13 +10,14 @@ function MessageBubble({ sender, text }) {
                 justifyContent: isUser
                     ? "flex-end"
                     : "flex-start",
-                marginBottom: "20px",
+                marginBottom: "16px",
             }}
         >
             <div
                 style={{
-                    maxWidth: isUser ? "70%" : "80%",
-                    padding: "14px 18px",
+                    maxWidth: isUser ? "70%" : "100%",
+                    minWidth: isUser ? "auto" : "320px",
+                    padding: "16px 20px",
                     borderRadius: isUser
                         ? "18px 18px 4px 18px"
                         : "18px 18px 18px 4px",
@@ -34,8 +37,8 @@ function MessageBubble({ sender, text }) {
                 <div
                     style={{
                         fontSize: "11px",
-                        fontWeight: "500",
-                        marginBottom: "8px",
+                        fontWeight: "600",
+                        marginBottom: "10px",
                         opacity: 0.8,
                     }}
                 >
@@ -46,12 +49,15 @@ function MessageBubble({ sender, text }) {
 
                 <div
                     style={{
-                        whiteSpace: "pre-line",
-                        lineHeight: "1.6",
-                        wordBreak: "break-word",
+                        padding: "8px 12px",
+lineHeight: "1.3",
+marginBottom: "6px",
+fontSize: "14px"
                     }}
                 >
-                    {text}
+                    <ReactMarkdown>
+                        {text}
+                    </ReactMarkdown>
                 </div>
             </div>
         </div>
