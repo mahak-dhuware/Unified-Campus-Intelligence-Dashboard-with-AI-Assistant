@@ -188,7 +188,7 @@ app.post("/chat", async (req, res) => {
         }
 
         if (name === "getMenu") {
-          return safeFetch("http://localhost:5003/menu", name);
+          return safeFetch(" https://unified-campus-intelligence-dashboard-sedd.onrender.com", name);
         }
 
         return { tool: name, error: "Unknown tool" };
