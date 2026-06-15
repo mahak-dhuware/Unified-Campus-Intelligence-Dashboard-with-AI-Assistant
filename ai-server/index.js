@@ -99,6 +99,13 @@ function formatToolContext(results) {
  * TEST ROUTE
  * ---------------------------
  */
+
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    service: "Unified Campus Intelligence AI Server",
+  });
+});
 app.get("/test-llm", async (req, res) => {
   try {
     const completion = await client.chat.completions.create({
