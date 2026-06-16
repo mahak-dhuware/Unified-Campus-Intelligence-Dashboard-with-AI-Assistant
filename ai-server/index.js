@@ -442,13 +442,14 @@ app.post("/chat", async (req, res) => {
 
       console.log("✅ Router success");
     } catch (err) {
-      console.error("❌ Router error:", err.message);
+  console.error("❌ ROUTER ERROR FULL:", err);
+  console.error("❌ ROUTER RESPONSE:", err?.response?.data);
 
-      return res.json({
-        reply: "I couldn't process tools right now, but I can still help you.",
-        toolsUsed: [],
-      });
-    }
+  return res.status(500).json({
+    error: "Router failed",
+    detail: err?.message,
+  });
+}
 
     const toolCalls =
       router?.choices?.[0]?.message?.tool_calls ?? [];
@@ -481,19 +482,22 @@ app.post("/chat", async (req, res) => {
           args = {};
         }
 
+        // if (name === "getBooks") {
+        //   return safeFetch(
+        //     `${process.env.LIBRARY_URL}?search=${args.search || ""}`,
+        //     name
+        //   );
+        // }
         if (name === "getBooks") {
-          return safeFetch(
-            `${process.env.LIBRARY_URL}?search=${args.search || ""}`,
-            name
-          );
-        }
+  console.log("📚 Library URL:", process.env.LIBRARY_URL/books);
+}
 
         if (name === "getEvents") {
-          return safeFetch(process.env.EVENTS_URL, name);
+          return safeFetch(process.env.EVENTS_URL/events, name);
         }
 
         if (name === "getMenu") {
-          return safeFetch(process.env.CAFETERIA_URL, name);
+          return safeFetch(process.env.CAFETERIA_URL/menu, name);
         }
 
         return { tool: name, error: "Unknown tool" };
