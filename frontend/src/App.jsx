@@ -14,9 +14,9 @@ import {
 
 function App() {
 
-    const [isMobile, setIsMobile] = useState(
-        window.innerWidth <= 768
-    );
+    const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+);
     const [messages, setMessages] = useState([]);
 
     const [loading, setLoading] = useState(false);
@@ -58,7 +58,14 @@ function App() {
 
         try {
 
-            const response = await sendToAI(text);
+           const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), 25000)
+);
+
+const response = await Promise.race([
+    sendToAI(text),
+    timeoutPromise,
+]);
 
             setMessages(prev => [...prev, {
                 sender: "assistant",
