@@ -691,49 +691,113 @@ app.post("/chat", async (req, res) => {
     }
 
     /* STEP 1: ROUTER */
+/* STEP 1: ROUTER */
 
-    const router =
-      await client.chat.completions.create({
-        model:"qwen/qwen-2.5-7b-instruct",
+let assistantMessage = {
+  role: "assistant",
+  content: null,
+};
 
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a campus tool router. Use tools whenever needed.",
-          },
-          {
-            role: "user",
-            content: message,
-          },
-        ],
+let toolCalls = [];
 
-        tools,
-        tool_choice: "auto",
-        max_tokens: 150,
-      });
+try {
+  console.log("🧠 Calling AI Router...");
 
-    const assistantMessage =
-      router.choices[0].message;
+  const router =
+    await client.chat.completions.create({
+      model: "openrouter/free",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a campus tool router. Use tools whenever needed.",
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+      tools,
+      tool_choice: "auto",
+      max_tokens: 150,
+    });
 
-    const toolCalls =
-      assistantMessage.tool_calls || [];
+  assistantMessage =
+    router.choices[0].message;
 
-    console.log(
-      "Tool Calls:",
-      JSON.stringify(toolCalls, null, 2)
-    );
+  toolCalls =
+    assistantMessage.tool_calls || [];
 
-    /* NO TOOL */
+  console.log("✅ AI Router Success");
+} catch (err) {
+  console.log(
+    "⚠️ AI Router failed. Using manual fallback."
+  );
 
-    if (toolCalls.length === 0) {
-      return res.json({
-        reply:
-          assistantMessage.content ||
-          "I couldn't determine the required action.",
-        toolsUsed: [],
-      });
-    }
+  const lower = message.toLowerCase();
+
+  if (
+    lower.includes("book") ||
+    lower.includes("library")
+  ) {
+    toolCalls.push({
+      id: "manual_books",
+      function: {
+        name: "getBooks",
+        arguments: "{}",
+      },
+    });
+  }
+
+  if (
+    lower.includes("event") ||
+    lower.includes("upcoming") ||
+    lower.includes("festival")
+  ) {
+    toolCalls.push({
+      id: "manual_events",
+      function: {
+        name: "getEvents",
+        arguments: "{}",
+      },
+    });
+  }
+
+  if (
+    lower.includes("menu") ||
+    lower.includes("food") ||
+    lower.includes("cafeteria") ||
+    lower.includes("meal")
+  ) {
+    toolCalls.push({
+      id: "manual_menu",
+      function: {
+        name: "getMenu",
+        arguments: "{}",
+      },
+    });
+  }
+
+  assistantMessage = {
+    role: "assistant",
+    content: null,
+    tool_calls: toolCalls,
+  };
+}
+
+console.log(
+  "Tool Calls:",
+  JSON.stringify(toolCalls, null, 2)
+);
+const failedTool =
+  toolResults.find((r) => r.error);
+
+if (failedTool) {
+  return res.json({
+    reply: `${failedTool.tool} service is currently unavailable. Please try again later.`,
+    toolsUsed: toolResults,
+  });
+}
 
     /* STEP 2: EXECUTE TOOLS */
 
@@ -799,13 +863,19 @@ app.post("/chat", async (req, res) => {
       "Tool Results:",
       JSON.stringify(toolResults, null, 2)
     );
+    if (toolCalls.length === 0) {
+  return res.json({
+    reply:
+      "I can help with books, events, and cafeteria services.",
+    toolsUsed: [],
+  });
+}
 
     /* STEP 3: FINAL RESPONSE */
 
-    const finalResponse =
-      await client.chat.completions.create({
-        model:
-          "qwen/qwen3-30b-a3b",
+   const finalResponse =
+  await client.chat.completions.create({
+    model: "qwen/qwen3-30b-a3b",
 
         messages: [
           {
