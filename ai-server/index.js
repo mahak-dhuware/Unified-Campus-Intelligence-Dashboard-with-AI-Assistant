@@ -109,7 +109,7 @@ app.get("/", (req, res) => {
 app.get("/test-llm", async (req, res) => {
   try {
     const completion = await client.chat.completions.create({
-    "model": "qwen/qwen-2.5-7b-instruct:free",
+    "model": "openai/gpt-oss-20b:free",
     max_tokens: 100,
       messages: [{ role: "user", content: "Say hello." }],
     });
@@ -128,6 +128,7 @@ app.get("/test-llm", async (req, res) => {
  * ---------------------------
  */
 app.post("/chat", async (req, res) => {
+    console.log("📨 /chat called");
   try {
     const { message } = req.body;
 
@@ -139,7 +140,7 @@ app.post("/chat", async (req, res) => {
      * STEP 1: TOOL ROUTER LLM
      */
     const router = await client.chat.completions.create({
-     model:"qwen/qwen-2.5-7b-instruct:free",
+     model:"openai/gpt-oss-20b:free",
       messages: [
         {
           role: "system",
@@ -209,8 +210,8 @@ app.post("/chat", async (req, res) => {
      */
     const toolContext = formatToolContext(toolResults);
 
-    const finalResponse = await client.chat.completions.create({
-  model: "qwen/qwen-2.5-7b-instruct:free",
+   const finalResponse = await client.chat.completions.create({
+  model: "openai/gpt-oss-20b:free",
   messages: [
     {
       role: "system",
@@ -223,16 +224,17 @@ Rules:
 - Do NOT show JSON
 - Keep response short (1–5 lines)
 - If data missing, say so simply
+
+Tool Results:
+${toolContext}
       `.trim(),
     },
-    { role: "user", content: message },
-    ...toolResults.map((r, i) => ({
-      role: "tool",
-      tool_call_id: toolCalls[i].id,
-      content: JSON.stringify(r),
-    })),
+    {
+      role: "user",
+      content: message,
+    },
   ],
-  max_tokens: 250
+  max_tokens: 250,
 });
 
     return res.json({
