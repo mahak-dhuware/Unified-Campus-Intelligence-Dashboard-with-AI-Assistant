@@ -658,7 +658,7 @@ app.get("/test-llm", async (req, res) => {
   try {
     const completion =
       await client.chat.completions.create({
-        model: "qwen/qwen-2.5-7b-instruct:free",
+        model: "qwen/qwen3-30b-a3b",
         messages: [
           {
             role: "user",
@@ -694,7 +694,7 @@ app.post("/chat", async (req, res) => {
 
     const router =
       await client.chat.completions.create({
-        model: "qwen/qwen3-30b-a3b:free",
+        model:"qwen/qwen-2.5-7b-instruct",
 
         messages: [
           {
@@ -805,7 +805,7 @@ app.post("/chat", async (req, res) => {
     const finalResponse =
       await client.chat.completions.create({
         model:
-          "qwen/qwen-2.5-7b-instruct:free",
+          "qwen/qwen3-30b-a3b",
 
         messages: [
           {
