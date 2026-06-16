@@ -109,7 +109,7 @@ app.get("/", (req, res) => {
 app.get("/test-llm", async (req, res) => {
   try {
     const completion = await client.chat.completions.create({
-    "model": "nex-agi/nex-n2-pro:free",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
     max_tokens: 100,
       messages: [{ role: "user", content: "Say hello." }],
     });
@@ -140,7 +140,7 @@ app.post("/chat", async (req, res) => {
      * STEP 1: TOOL ROUTER LLM
      */
     const router = await client.chat.completions.create({
-     model:"nex-agi/nex-n2-pro:free",
+     model:"nvidia/nemotron-3-ultra-550b-a55b:free",
       messages: [
         {
           role: "system",
@@ -211,7 +211,7 @@ app.post("/chat", async (req, res) => {
     const toolContext = formatToolContext(toolResults);
 
    const finalResponse = await client.chat.completions.create({
-  model: "nex-agi/nex-n2-pro:free",
+  model: "nvidia/nemotron-3-ultra-550b-a55b:free",
   messages: [
     {
       role: "system",
