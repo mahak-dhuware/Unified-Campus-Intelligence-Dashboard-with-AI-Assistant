@@ -109,7 +109,8 @@ app.get("/", (req, res) => {
 app.get("/test-llm", async (req, res) => {
   try {
     const completion = await client.chat.completions.create({
-     "model": "openai/gpt-4o",
+    "model": "qwen/qwen-2.5-7b-instruct:free",
+    max_tokens: 100,
       messages: [{ role: "user", content: "Say hello." }],
     });
 
@@ -138,7 +139,7 @@ app.post("/chat", async (req, res) => {
      * STEP 1: TOOL ROUTER LLM
      */
     const router = await client.chat.completions.create({
-     model:"openrouter/free",
+     model:"qwen/qwen-2.5-7b-instruct:free",
       messages: [
         {
           role: "system",
@@ -186,8 +187,7 @@ app.post("/chat", async (req, res) => {
             ? `?search=${args.search}`
             : "";
           return safeFetch(
-             `${process.env.LIBRARY_URL}/books,
-${searchQuery}`,
+             `${process.env.LIBRARY_URL}/books${searchQuery}`,
             name
           );
         }
@@ -210,7 +210,7 @@ ${searchQuery}`,
     const toolContext = formatToolContext(toolResults);
 
     const finalResponse = await client.chat.completions.create({
-  model: "qwen/qwen-2.5-7b-instruct",
+  model: "qwen/qwen-2.5-7b-instruct:free",
   messages: [
     {
       role: "system",

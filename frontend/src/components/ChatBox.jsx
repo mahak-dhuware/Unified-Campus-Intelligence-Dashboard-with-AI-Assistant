@@ -60,7 +60,7 @@ function ChatBox({ sendMessage, disabled = false }) {
                 onClick={handleSend}
                 style={styles.button}
             >
-                {disabled ? "Sending..." : "Send"}
+              Send
             </button>
         </div>
     );

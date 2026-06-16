@@ -14,5 +14,5 @@ app.get("/events", (req, res) => {
 const PORT = process.env.PORT || 5002;
 
 app.listen(PORT, () => {
-  console.log("Library server running");
+  console.log("Events server running");
 });
