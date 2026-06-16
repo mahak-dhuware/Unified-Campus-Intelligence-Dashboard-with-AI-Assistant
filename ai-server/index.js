@@ -186,17 +186,18 @@ app.post("/chat", async (req, res) => {
             ? `?search=${args.search}`
             : "";
           return safeFetch(
-            `https://unified-campus-intelligence-dashboard-h3nz.onrender.com/books${searchQuery}`,
+             `${process.env.LIBRARY_URL}/books,
+${searchQuery}`,
             name
           );
         }
 
         if (name === "getEvents") {
-          return safeFetch("https://unified-campus-intelligence-dashboard-n2b6.onrender.com/events", name);
+          return safeFetch(`${process.env.EVENTS_URL}/events`, name);
         }
 
         if (name === "getMenu") {
-          return safeFetch(" https://unified-campus-intelligence-dashboard-sedd.onrender.com/menu", name);
+          return safeFetch(`${process.env.CAFETERIA_URL}/menu`, name);
         }
 
         return { tool: name, error: "Unknown tool" };
