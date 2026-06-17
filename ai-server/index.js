@@ -72,12 +72,31 @@ const allowedTools = new Set(["getBooks", "getEvents", "getMenu"]);
  */
 async function safeFetch(url, tool) {
   try {
-    const res = await axios.get(url, { timeout: 4000 });
-    return { tool, data: res.data };
-  } catch (err) {
+    console.log(`🔗 Fetching ${tool}: ${url}`);
+
+    const res = await axios.get(url, {
+      timeout: 10000,
+    });
+
+    console.log(`✅ ${tool} success`);
+
     return {
       tool,
-      error: "Service unavailable or timeout",
+      data: res.data,
+    };
+  } catch (err) {
+    console.error(`❌ ${tool} failed`);
+
+    console.error("Message:", err.message);
+
+    if (err.response) {
+      console.error("Status:", err.response.status);
+      console.error("Data:", err.response.data);
+    }
+
+    return {
+      tool,
+      error: err.message,
     };
   }
 }
